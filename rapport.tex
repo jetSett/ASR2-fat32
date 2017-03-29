@@ -31,6 +31,7 @@
 \usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
 % These packages are all incorporated in the memoir class to one degree or another...
 \usepackage{amsmath}
+\usepackage{listings}
 %%% HEADERS & FOOTERS
 \usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
 \pagestyle{fancy} % options: empty , plain , fancy
@@ -81,6 +82,38 @@ On a tout d'abord un offset (en secteur) égal au nombre de secteurs réservés 
 $$
   \text{first\_sect\_cluster}(C) = \text{nb\_sect\_reservés} + \text{nb\_sect\_per\_fat} \cdot \text{nb\_fat} + (C-2) \cdot \text{nb\_sector\_per\_cluster}
 $$
+
+\section{Lecture de noeuds}
+\subsection{}
+Je vais commencer par noter $K$ le nombre d'octets par cluster. On a 
+$$K = \text{bytes\_per\_sector} \cdot \text{sectors\_per\_cluster}$$
+Ensuite, l'idée est de faire la division entière de $p$ par $K$ pour regarde le nombre de cluster qui sont ``passés'' par $p$, puis de regarder le modulo pour connaitre l'offset par rapport à ce nouveau cluster.
+
+On aura alors 
+$$C' = C + p//K$$ et $$p' = p\%K$$
+
+Note : dans le code, $K$ est appellé ``bytes\_per\_cluster``
+\setcounter{subsection}{2}
+\subsection{}
+La question est étrange : j'imagine que le but est de lire les octets dans le cluster indiqué... J'implémente donc cela
+\subsection{}
+On va maintenir les variables current\_offset, buf et cluster tout au long de la boucle
+\begin{lstlisting}[language=C]
+    while(size > 0){
+      if(current_offset+size > bytes_per_cluster){
+        size-=(bytes_per_cluster-current_offset);
+        read_in_cluster(cluster, current_offset, 
+			bytes_per_cluster-current_offset, buf);
+        buf += (bytes_per_cluster-current_offset)*sizeof(uint8_t); 
+        current_offset = 0; 
+        cluster = next_cluster_index(cluster); 
+      }else{ 
+        read_in_cluster(cluster, current_offset, size, buf);
+      }
+    }
+
+\end{lstlisting}
+
 
 
 \section*{Notes}

@@ -67,7 +67,7 @@ struct fat32_driver* fat32_driver_new(const char *image_name) {
     fseek(file, 44, SEEK_SET);
     driver->first_cluster_root = read_uint32_littleendian(file);
 
-    
+
 #ifdef DEBUG
     fprintf(stderr, "Bytes per sector: %d\n", driver->bytes_per_sector);
     fprintf(stderr, "Sectors per cluster: %d\n", driver->sectors_per_cluster);
@@ -98,15 +98,24 @@ uint32_t next_cluster_index(const struct fat32_driver *driver, uint32_t cluster_
   return positionNext;
 }
 
+
+// retourne le numéro du premier secteur du cluster en entrée
 uint32_t get_cluster_sector(const struct fat32_driver *driver, uint32_t cluster_index) {
   return driver->nb_reserved_sectors + driver->sectors_per_fat*driver->nb_fats +
     (cluster_index-2)*driver->sectors_per_cluster;
 }
 
+// lit size octets avec offset dans un certain cluster
 void read_in_cluster(const struct fat32_driver *driver, uint32_t cluster, uint32_t offset, size_t size, uint8_t *buf) {
     assert(offset+size <= driver->bytes_per_sector*driver->sectors_per_cluster);
 
-    assert(0); // TODO: remplacez-moi
+    uint32_t sector_offset = get_cluster_sector(driver, cluster)*driver->bytes_per_sector;
+
+    unsigned i = 0;
+    fseek(driver->fd, offset+sector_offset, SEEK_SET);
+    for(i = 0; i<size; ++i){
+      buf[i] = read_uint8(driver->fd);
+    }
 }
 
 /* Lit une partie de l'entrée correspondant au nœud 'node'.
@@ -121,9 +130,17 @@ void read_node_entry(const struct fat32_node *node, uint32_t offset, size_t size
     uint32_t bytes_per_cluster = (uint32_t) node->driver->sectors_per_cluster*node->driver->bytes_per_sector;
     uint32_t current_offset = node->offset + offset;
 
-    assert(0); // TODO: remplacez-moi (première partie)
-    
-    assert(0); // TODO: remplacez-moi (deuxième partie)
+    while(size > 0){
+      if(current_offset+size > bytes_per_cluster){ // si on va dépasser
+        size-=(bytes_per_cluster-current_offset);
+        read_in_cluster(node->driver, cluster, current_offset, bytes_per_cluster-current_offset, buf);
+        buf += (bytes_per_cluster-current_offset)*sizeof(uint8_t); // on incrémente l'endroit où on va insérer
+        current_offset = 0; // à partir de maintenant on lit depuis le début
+        cluster = next_cluster_index(node->driver, cluster); // on change de cluster
+      }else{ // sinon c'est bon c'est facile
+        read_in_cluster(node->driver, cluster, current_offset, size, buf);
+      }
+    }
 }
 
 /* Lit le nom d'un nœud et les éventuelles entrées LFN (Long File Name)
@@ -213,7 +230,7 @@ uint8_t fat32_node_get_attributes(const struct fat32_node *node) {
     uint8_t attributes;
 
     read_node_entry(node, 11+(node->nb_lfn_entries*LFN_ENTRY_SIZE), 1, &attributes);
-    
+
     return attributes;
 }
 
