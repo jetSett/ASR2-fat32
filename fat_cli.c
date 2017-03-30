@@ -20,17 +20,6 @@ void print_help() {
 
 /* Vous pouvez éventuellement utiliser une fonction auxiliaire pour 'tree' */
 
-/* Gestion de la commande "tree". */
-int tree(char* fat_disk) {
-    struct fat32_driver *driver = fat32_driver_new(fat_disk);
-    struct fat32_node *root = fat32_driver_get_root_dir(driver);
-
-    assert(0); // TODO: remplacez-moi
-    //
-    fat32_node_free(root);
-    fat32_driver_free(driver);
-    return EXIT_SUCCESS;
-}
 
 void parcours(struct fat32_node_list* nodeList){
   if(nodeList == NULL)
@@ -42,16 +31,31 @@ void parcours(struct fat32_node_list* nodeList){
     parcours(fat32_node_get_children(nodeList->node));
     printf("<-\n");
   }
+  parcours(nodeList->next);
 }
 
-/* Gestion de la commande "ls". */
-int ls(char* fat_disk, char* path) {
+/* Gestion de la commande "tree". */
+int tree(char* fat_disk) {
     struct fat32_driver *driver = fat32_driver_new(fat_disk);
     struct fat32_node *root = fat32_driver_get_root_dir(driver);
 
     parcours(fat32_node_get_children(root));
 
     return EXIT_SUCCESS;
+    //
+    fat32_node_free(root);
+    fat32_driver_free(driver);
+    return EXIT_SUCCESS;
+}
+
+
+/* Gestion de la commande "ls". */
+int ls(char* fat_disk, char* path) {
+    struct fat32_driver *driver = fat32_driver_new(fat_disk);
+    struct fat32_node *root = fat32_driver_get_root_dir(driver);
+
+    assert(0);
+
 }
 
 /* Gestion de la commande "cat". */

@@ -1,7 +1,7 @@
 CFLAGS+=-Wno-unused-parameter -Wno-unused-variable # Pour ne pas que les trous dans le code fassent des erreurs de compil
 CC?=gcc
 CFLAGS+=-Wextra -Wall -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wcast-align -Wconversion -Wdouble-promotion -Wfloat-equal -Wshadow -Wpointer-arith
-
+CFLAGS+= -DDEBUG
 all: fat_cli
 
 test: test_utils.o utils.o
