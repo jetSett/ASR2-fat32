@@ -32,12 +32,26 @@ int tree(char* fat_disk) {
     return EXIT_SUCCESS;
 }
 
+void parcours(struct fat32_node_list* nodeList){
+  if(nodeList == NULL)
+    return;
+
+  printf("%s\n", fat32_node_get_name(nodeList->node));
+  if(fat32_node_is_dir(nodeList->node)){
+    printf("->\n");
+    parcours(fat32_node_get_children(nodeList->node));
+    printf("<-\n");
+  }
+}
+
 /* Gestion de la commande "ls". */
 int ls(char* fat_disk, char* path) {
     struct fat32_driver *driver = fat32_driver_new(fat_disk);
     struct fat32_node *root = fat32_driver_get_root_dir(driver);
 
-    assert(0); // TODO: remplacez-moi
+    parcours(fat32_node_get_children(root));
+
+    return EXIT_SUCCESS;
 }
 
 /* Gestion de la commande "cat". */

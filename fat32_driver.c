@@ -205,8 +205,10 @@ void read_name(struct fat32_node *node) {
         }
     }
     else { /* Short file name */
-        assert(0); // TODO: remplacez-moi
 
+        uint8_t name[12] = {0}; // on va avoir des noms de 11+1 octet
+        read_node_entry(node, 0, 11, name);
+        memcpy(node->name, name, 12);
         node->nb_lfn_entries = 0;
     }
 }
@@ -240,7 +242,13 @@ bool fat32_node_is_dir(const struct fat32_node *node) {
         return true;
     }
     else {
-        assert(0); // TODO: remplacez-moi
+      uint8_t attrib;
+      read_node_entry(node, 11, 1, &attrib);
+      if((attrib&0x10) == 0){
+        return false;
+      }else{
+        return true;
+      }
     }
 }
 
@@ -296,7 +304,13 @@ struct fat32_node* fat32_driver_get_root_dir(const struct fat32_driver *driver) 
 }
 
 uint32_t get_content_cluster(const struct fat32_node *node) {
-    assert(0); // TODO: remplacez-moi
+  uint8_t h[2];
+  uint8_t l[2];
+  read_node_entry(node, 20, 2, h);
+  read_node_entry(node, 26, 2, l);
+  uint16_t H = (uint16_t)(h[0] + (h[1]<<8));
+  uint16_t L = (uint16_t)(l[0] + (l[1]<<8));
+  return (uint32_t)((H<<8) + L);
 }
 
 struct fat32_node_list* fat32_node_get_children(const struct fat32_node *node) {

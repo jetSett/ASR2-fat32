@@ -114,7 +114,11 @@ On va maintenir les variables current\_offset, buf et cluster tout au long de la
 
 \end{lstlisting}
 
-
+\setcounter{subsection}{4}
+Les ''low bits`` sont les bits de poids faibles (je les notes $l$) et les ''high`` bits ($h$) sont ceux de poids fort. Pour calculer le numéro de cluster $N$, je n'ai qu'à faire l'opération suivante :
+$$
+  N = l + h \cdot 2^{16}
+$$
 
 \section*{Notes}
 J'utilise emacs pour coder, ce qui fait que mon indentation est plus petite que celle des fichiers donnés dans l'archive, j'ai donc tout réindenté
